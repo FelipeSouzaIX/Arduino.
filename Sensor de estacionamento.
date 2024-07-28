@@ -1,0 +1,100 @@
+int distance = 0;
+double cm = 0;
+int n = 0;
+
+long readUltrassonicdistance(int triggerPin, int echoPin)
+{
+  pinMode(triggerPin, OUTPUT);
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(1);
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(3);
+  digitalWrite(triggerPin, LOW);
+  pinMode(echoPin, INPUT);
+  return pulseIn(echoPin, HIGH);
+} //envia sinal no sensor e reconhece a volta dele após ir ao objeto e voltar
+
+void calculaDistancia()
+{
+  distance = 300;
+  cm = 0.017233 * readUltrassonicdistance(12, 11);
+  Serial.print(cm);
+  Serial.print("cm\n");
+} // calcula distância do objeto ao sensor
+
+void setup()
+{
+  Serial.begin(11500);
+  pinMode(3, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(6, OUTPUT);
+  pinMode(10, OUTPUT);
+} // define pinos do arduino a serem usados
+
+void loop()
+{
+  calculaDistancia();
+  
+    do {
+      digitalWrite(6, LOW);
+      digitalWrite(5, LOW);
+      digitalWrite(3, LOW);
+      noTone(10);
+      calculaDistancia();
+    } while (cm > distance); //mantém tudo desligado
+  //caso a disância seja maior a 300cm
+
+    do {
+      digitalWrite(6, HIGH);
+      digitalWrite(5, LOW);
+      digitalWrite(3, LOW);
+      tone(10, 100);
+      delay(300);
+      digitalWrite(6, LOW);
+      noTone(10);
+      delay(900);
+      calculaDistancia();
+    } while (cm <= distance && cm > distance - 100);
+//pisca verde e reproduz som grave caso objeto
+//esteja entre 200 e 300cm do sensor
+    do {
+      digitalWrite(6, HIGH);
+      digitalWrite(5, HIGH);
+      digitalWrite(3, LOW);
+      tone(10, 700);
+      delay(300);
+      digitalWrite(6, LOW);
+      digitalWrite(5, LOW);
+      noTone(10);
+      delay(500);
+      calculaDistancia();
+    } while (cm <= distance - 100 && cm > distance - 200);
+// pisca leds verde e amarelo e reproduz som com frequência mediana
+// caso objeto esteja entre 100 e 200cm do sensor
+    do {
+      digitalWrite(6, HIGH);
+      digitalWrite(5, HIGH);
+      digitalWrite(3, HIGH);
+      tone(10, 1500);
+      delay(300);
+      digitalWrite(6, LOW);
+      digitalWrite(5, LOW);
+      digitalWrite(3, LOW);
+      noTone(10);
+      delay(180);
+      calculaDistancia();
+    } while (cm <= distance - 200 && cm > distance - 250);
+// pisca todos os leds e reproduz som agudo caso o  objeto
+//esteja entre 100 e 50cm do sensor
+    do {
+      digitalWrite(6, HIGH);
+      digitalWrite(5, HIGH);
+      digitalWrite(3, HIGH);
+      tone(10, 2000);
+      delay(100);
+      calculaDistancia();
+    } while (cm <= distance - 250 && cm > distance - 300);
+//mantem todos os leds acesos e reproduz som agudo caso 
+//objeto esteja entre 50 a 0cm do sensor
+  delay(1);
+}
